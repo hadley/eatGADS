@@ -55,7 +55,18 @@ extract_attribute <- function(var, attr_name, NA_type = NA_character_) {
   out
 }
 
-# newer haven versions store format and display width in a single S7 attribute 'haven_meta'
+# newer haven versions (>= 2.6.0) store format and display width in a single S7
+# attribute 'haven_meta' instead of the top-level 'format.spss' and 'display_width'
+# attributes. This shim converts the new format back to the old attributes so the
+# rest of the package works unchanged with both haven versions.
+#
+# TODO: once the new haven is on CRAN and eatGADS can depend on it (i.e. require
+# the new haven version in DESCRIPTION), remove this shim and read 'haven_meta'
+# directly instead: extract_variable_level.savDat() should get 'format' and
+# 'display_width' from attr(var, "haven_meta") (an S7 object, e.g. of class
+# "haven::meta_var_spss", whose properties can be read with attr()), and
+# times2character.savDat() should do the same for 'format'. The unknown-attributes
+# check in extract_variable_level.savDat() can then simply drop 'haven_meta'.
 haven_meta2attributes <- function(var) {
   meta <- attr(var, "haven_meta", exact = TRUE)
   if(is.null(meta)) return(var)
