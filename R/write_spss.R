@@ -76,6 +76,10 @@ write_stata.GADSdat <- function(GADSdat, filePath) {
               "truncated. Further investigations using check4Stata() are recommended.")
     }
   }
+  # newer haven versions do not truncate variable labels which are too long
+  limit_list <- getProgramLimit(program = "Stata", component = "varLabels")
+  long_varLabels <- which(nchar(GADSdat$labels$varLabel, type = limit_list$unit) > limit_list$value)
+  GADSdat$labels$varLabel[long_varLabels] <- substr(GADSdat$labels$varLabel[long_varLabels], 1, limit_list$value)
   df <- export_tibble(GADSdat = GADSdat)
   warning("Missing codes and variable formats are dropped when writing to '.dta'.")
   haven::write_dta(df, path = filePath)
